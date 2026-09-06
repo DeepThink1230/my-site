@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Base from '../../layouts/Base.astro';
+import { formatDate } from '../../utils';
+
+export async function getStaticPaths() {
+  const albums = await getCollection('albums');
+  return albums.map((album) => ({
+    params: { id: album.id },
+    props: { album },
+  }));
+}
+
+const { album } = Astro.props;
+const { Content } = await render(album);
+
+// 列出这本相册文件夹里的所有照片（按文件名排序）
+const files = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/albums/**/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+const photos = Object.entries(files)
+  .filter(([path]) => path.startsWith(`/src/assets/albums/${album.data.folder}/`))
+  .sort(([a], [b]) => a.localeCompare(b, 'zh-CN', { numeric: true }))
+  .map(([, mod]) => mod.default);
+---
+
+<Base title={album.data.title} description={album.data.summary} wide>
+  <article class="prose" style="margin-top: 18px;">
+    <h1>📷 {album.data.title}</h1>
+    <p style="color: var(--muted); font-size: 0.92rem;">
+      📅 {formatDate(album.data.date)} · 共 {photos.length} 张
+    </p>
+    <Content />
+  </article>
+
+  {photos.length > 0 ? (
+    <div class="photo-grid" style="margin-top: 20px;">
+      {photos.map((photo) => (
+        <Image
+          src={photo}
+          width={900}
+          class="zoomable"
+          alt={album.data.title}
+          loading="lazy"
+        />
+      ))}
+    </div>
+  ) : (
+    <p class="empty-tip">这本相册还没有照片</p>
+  )}
+
+  <p style="text-align:center; margin-top: 26px;">
+    <a href="/gallery/">← 回到相册列表</a>
+  </p>
+</Base>

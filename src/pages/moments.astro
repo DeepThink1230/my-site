@@ -1,0 +1,23 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import MomentItem from '../components/MomentItem.astro';
+import { groupByMonth } from '../utils';
+
+const moments = (await getCollection('moments')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const grouped = groupByMonth(moments, (m) => m.data.date);
+---
+
+<Base title="时间线" description="一条一条的生活碎片">
+  {grouped.map(([month, items]) => (
+    <section class="section">
+      <h2 class="month-label">{month}</h2>
+      <div class="timeline">
+        {items.map((m) => <MomentItem moment={m} />)}
+      </div>
+    </section>
+  ))}
+  {moments.length === 0 && <p class="empty-tip">还没有留下动态 🍃</p>}
+</Base>

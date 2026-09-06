@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { formatShort } from '../../../utils';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      posts: posts
+        .filter((p) => p.data.tags.includes(tag))
+        .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()),
+    },
+  }));
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+---
+
+<Base title={`# ${tag}`} description={`标签「${tag}」下的所有随笔`}>
+  <h2 class="month-label" style="margin-top: 18px;">🏷️ #{tag} · 共 {posts.length} 篇</h2>
+  <div class="post-list">
+    {posts.map((p) => (
+      <a class="card hoverable post-card" href={`/essays/${p.id}/`} style="display:block">
+        <h3>{p.data.title}</h3>
+        <div class="meta">
+          <span>📅 {formatShort(p.data.date)}</span>
+          {p.data.tags.map((t) => <span class="tag">#{t}</span>)}
+        </div>
+      </a>
+    ))}
+  </div>
+  <p style="text-align:center; margin-top: 26px;">
+    <a href="/essays/">← 回到随笔列表</a>
+  </p>
+</Base>

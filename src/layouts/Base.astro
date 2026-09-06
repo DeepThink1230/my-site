@@ -1,0 +1,111 @@
+---
+import '../styles/global.css';
+import { SITE } from '../config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  wide?: boolean;
+}
+
+const { title, description = SITE.bio, wide = false } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · ${SITE.motto}`;
+
+const navItems = [
+  { href: '/', label: '首页' },
+  { href: '/essays/', label: '随笔' },
+  { href: '/moments/', label: '时间线' },
+  { href: '/gallery/', label: '相册' },
+  { href: '/about/', label: '关于' },
+];
+
+const current = Astro.url.pathname;
+function isActive(href: string): boolean {
+  if (href === '/') return current === '/';
+  return current.startsWith(href);
+}
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <script is:inline>
+      // 页面绘制前先定好主题，避免闪烁
+      (function () {
+        var saved = localStorage.getItem('theme');
+        var prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = saved || (prefers ? 'dark' : 'light');
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/" class="site-title">
+          <span class="leaf">🌱</span>
+          {SITE.name}
+        </a>
+        <nav class="nav">
+          {navItems.map((item) => (
+            <a href={item.href} class={isActive(item.href) ? 'active' : ''}>{item.label}</a>
+          ))}
+          <span class="spacer"></span>
+          <button class="theme-btn" id="theme-btn" aria-label="切换日间/夜间模式">🌙</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class={wide ? 'wrap wrap-wide' : 'wrap'}>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          © {new Date().getFullYear()} {SITE.name} · 由 {SITE.author} 用心记录
+        </p>
+        <p>
+          <a href="/rss.xml">RSS 订阅</a> · 慢慢生活，慢慢记录
+        </p>
+      </div>
+    </footer>
+
+    <div class="lightbox" id="lightbox"><img id="lightbox-img" src="" alt="放大查看" /></div>
+
+    <script>
+      // 日间 / 夜间模式切换
+      const btn = document.getElementById('theme-btn') as HTMLButtonElement;
+      const setBtnIcon = () => {
+        btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+      };
+      setBtnIcon();
+      btn.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+        setBtnIcon();
+      });
+
+      // 点击图片放大
+      const lightbox = document.getElementById('lightbox')!;
+      const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+      document.querySelectorAll<HTMLImageElement>('.zoomable').forEach((img) => {
+        img.addEventListener('click', () => {
+          lightboxImg.src = img.src;
+          lightbox.classList.add('open');
+        });
+      });
+      lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') lightbox.classList.remove('open');
+      });
+    </script>
+  </body>
+</html>
