@@ -6,6 +6,8 @@
 
 支持日间/夜间模式、手机端适配、RSS 订阅。部署在 Cloudflare Pages 上，国内可以直接打开，无需备案，完全免费。
 
+**🌐 在线地址：<https://my-site-hct.pages.dev>** —— 已部署上线，发给任何人都能打开。
+
 ---
 
 ## 📁 内容放在哪里（重要）
@@ -23,7 +25,8 @@
 
 ## 📝 如何发布一篇随笔
 
-**前提**：网站已部署上线（见下方「首次部署」），你登录着 github.com（手机 App 或电脑网页都行）。
+**前提**：你登录着 github.com（手机 App 或电脑网页都行），仓库地址：https://github.com/DeepThink1230/my-site
+（网站已上线，发布后约 1 分钟自动更新）
 
 1. 打开你的 GitHub 仓库 → 进入 `src/content/posts/` 文件夹
 2. 点 **Add file → Create new file**，文件名取成 `2026-09-06-我的标题.md`（`日期-标题.md` 的格式）
@@ -103,7 +106,11 @@ summary: 相册的一句话说明
 
 ---
 
-## 🚀 首次部署（只需做一次，约 15 分钟）
+## 🚀 首次部署（✅ 你已完成，以下留作参考）
+
+> 你的网站已经在 https://my-site-hct.pages.dev 上线，本节步骤已完成，保留下来供以后换电脑或重新部署时参考。
+> 你的仓库：https://github.com/DeepThink1230/my-site
+> Cloudflare 控制台：https://dash.cloudflare.com （左侧 Build → Compute → Workers 和 Pages → 点进 my-site 项目）
 
 ### 第 1 步：注册 GitHub 并创建仓库
 
@@ -154,4 +161,4 @@ summary: 相册的一句话说明
 - **发布后网站没变化？** 等 1-2 分钟再强刷（手机下拉刷新；电脑 Ctrl+F5）。Cloudflare 构建需要一点时间。
 - **照片显示不出来？** 九成是 HEIC 格式，转成 JPG 再传；另外检查文件名和 `images:` / `folder` 里写的是否**一字不差**（区分大小写）。
 - **国内打开慢？** 正常现象，文字秒开，图片第一次加载会慢一点。以后可以花几十块买个域名绑定，会明显改善。
-- **想本地预览？** 电脑上装好 [Node.js](https://nodejs.org) 后，在本文件夹运行 `npm install` 和 `npm run dev`，浏览器打开 `http://localhost:4321`。
+- **想本地预览？** 双击本文件夹里的 **`启动预览.bat`** 即可（等几秒浏览器自动打开 `http://localhost:4321`，关掉黑窗口即停止）。首次在新电脑上使用需要先装 [Node.js](https://nodejs.org) 并运行一次 `npm install`。
