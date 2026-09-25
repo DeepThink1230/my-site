@@ -106,6 +106,35 @@ function isActive(href: string): boolean {
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') lightbox.classList.remove('open');
       });
+
+      // iOS 风滚动浮现：卡片进入视口时淡入上移，带轻微交错节奏
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const candidates = document.querySelectorAll<HTMLElement>(
+        '.post-list .card, .timeline .moment, .album-grid .album-card, .section, .prose'
+      );
+      if (reduceMotion || !('IntersectionObserver' in window)) {
+        candidates.forEach((el) => el.classList.add('revealed'));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const el = entry.target as HTMLElement;
+                el.style.transitionDelay = `${(el.dataset.revealIndex ?? 0) * 45}ms`;
+                el.classList.add('revealed');
+                io.unobserve(el);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+        );
+        let index = 0;
+        candidates.forEach((el) => {
+          el.classList.add('reveal-item');
+          el.dataset.revealIndex = String(index++ % 5);
+          io.observe(el);
+        });
+      }
     </script>
   </body>
 </html>

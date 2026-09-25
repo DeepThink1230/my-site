@@ -6,6 +6,23 @@ dist/
 # 本地工具（Node.js 运行时，不属于网站）
 .tools/
 
+# ===== 以下为个人文件，与网站无关，严禁发布到公开仓库 =====
+analysis/
+A题.txt
+B题.txt
+C题.txt
+_extract_docx.py
+_inspect.py
+fix_templates.py
+c_problem_decoded.txt
+format2026.txt
+ocr*.ps1
+ocr*.png
+paper*.txt
+两篇论文对比分析报告.md
+论文A优化方案*.md
+论文A优化点清单.md
+
 # 系统文件
 .DS_Store
 Thumbs.db

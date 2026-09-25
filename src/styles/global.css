@@ -110,6 +110,15 @@ img {
   max-width: 880px;
 }
 
+/* ---------- iOS 风格交互基础 ---------- */
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a, button, .hoverable, .zoomable {
+  touch-action: manipulation;
+}
+
 /* ---------- 顶部 ---------- */
 .site-header {
   padding: 34px 0 10px;
@@ -128,6 +137,11 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  transition: opacity 0.2s ease;
+}
+
+.site-title:active {
+  opacity: 0.6;
 }
 
 .site-title:hover {
@@ -137,18 +151,33 @@ img {
 .site-title .leaf {
   display: inline-block;
   transform-origin: bottom center;
-  transition: transform 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .site-title:hover .leaf {
   transform: rotate(-12deg) scale(1.15);
 }
 
+/* 悬浮胶囊导航：毛玻璃（iOS 风） */
 .nav {
+  position: sticky;
+  top: 10px;
+  z-index: 40;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  padding: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .nav { background: var(--card); }
 }
 
 .nav a {
@@ -158,7 +187,11 @@ img {
   font-size: 0.95rem;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+}
+
+.nav a:active {
+  transform: scale(0.92);
 }
 
 .nav a:hover {
@@ -187,13 +220,17 @@ img {
   height: 38px;
   font-size: 1.05rem;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
   color: var(--ink);
 }
 
 .theme-btn:hover {
   transform: rotate(15deg) scale(1.08);
   box-shadow: var(--shadow);
+}
+
+.theme-btn:active {
+  transform: scale(0.85) rotate(180deg);
 }
 
 /* ---------- 卡片与胶带 ---------- */
@@ -223,6 +260,53 @@ img {
 .card.hoverable:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-lift);
+}
+
+/* iOS 按压反馈：按下轻微缩小，松手回弹 */
+.card.hoverable:active {
+  transform: scale(0.975);
+  transition-duration: 0.12s;
+}
+
+/* ---------- 页面进入动画（iOS 转场质感） ---------- */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+main.wrap > * {
+  animation: pageIn 0.5s cubic-bezier(0.22, 0.68, 0.31, 1) both;
+}
+
+/* 滚动浮现：JS 会在元素进入视口时加 .revealed */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s cubic-bezier(0.22, 0.68, 0.31, 1),
+              transform 0.55s cubic-bezier(0.22, 0.68, 0.31, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-item.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  main.wrap > * {
+    animation: none;
+  }
 }
 
 /* ---------- 首页 Hero ---------- */
@@ -564,21 +648,27 @@ img {
   padding: 30px 0;
 }
 
-/* ---------- 图片放大层 ---------- */
+/* ---------- 图片放大层（iOS 式缩放过渡） ---------- */
 .lightbox {
   position: fixed;
   inset: 0;
   z-index: 99;
   background: rgba(20, 15, 10, 0.82);
-  display: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: zoom-out;
   padding: 30px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
 }
 
 .lightbox.open {
-  display: flex;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .lightbox img {
@@ -586,6 +676,21 @@ img {
   max-height: 92vh;
   border-radius: 12px;
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+  transform: scale(0.88);
+  transition: transform 0.32s cubic-bezier(0.22, 0.68, 0.31, 1);
+}
+
+.lightbox.open img {
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox, .lightbox img {
+    transition: none;
+  }
+  .lightbox img {
+    transform: none;
+  }
 }
 
 /* ---------- 移动端 ---------- */
@@ -594,25 +699,26 @@ img {
     padding-top: 24px;
   }
 
-  .site-header .wrap {
-    position: relative;
-  }
-
-  /* 手机端：主题按钮移到标题行右侧，导航一行横向滚动 */
-  .theme-btn {
-    position: absolute;
-    right: 20px;
-    top: -2px;
-  }
-
+  /* 手机端：主题按钮固定在胶囊导航右侧，链接一行横向滚动 */
   .nav {
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
+    position: sticky;
+    top: 8px;
+    padding-right: 52px;
   }
 
   .nav::-webkit-scrollbar {
     display: none;
+  }
+
+  .theme-btn {
+    position: absolute;
+    right: 7px;
+    top: 7px;
+    width: 36px;
+    height: 36px;
   }
 
   .site-title {

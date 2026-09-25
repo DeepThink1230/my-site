@@ -8,6 +8,21 @@
 
 **🌐 在线地址：<https://my-site-hct.pages.dev>** —— 已部署上线，发给任何人都能打开。
 
+## ⚡ 一键直达（手机/电脑点开就能写，先登录 GitHub）
+
+把下面这些链接收藏到手机（浏览器书签，或收藏到微信/QQ 自己），点开就是对应的编辑页面：
+
+| 想做什么 | 点这个链接 |
+| --- | --- |
+| ✍️ 写一篇新随笔 | <https://github.com/DeepThink1230/my-site/new/main/src/content/posts> |
+| 💭 发一条新动态 | <https://github.com/DeepThink1230/my-site/new/main/src/content/moments> |
+| 📖 新建一本相册的说明 | <https://github.com/DeepThink1230/my-site/new/main/src/content/albums> |
+| 🙋 改「关于我」页面 | <https://github.com/DeepThink1230/my-site/edit/main/src/pages/about.md> |
+| 🏷️ 改网站名字/称呼 | <https://github.com/DeepThink1230/my-site/edit/main/src/config.ts> |
+| 📄 看发布教程（本页） | <https://github.com/DeepThink1230/my-site/edit/main/README.md> |
+
+「写新随笔」「发新动态」点开后是全屏编辑器：文件名栏填 `2026-09-25-标题.md` 这样的名字，正文区粘贴下方对应模板改内容，拉到底点绿色的 **Commit changes** 按钮即可。保存后约 1 分钟网站自动更新。
+
 ---
 
 ## 📁 内容放在哪里（重要）
