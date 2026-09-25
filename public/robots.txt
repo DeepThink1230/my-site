@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # 上线后把 example.com 换成你的正式网址
-Sitemap: https://example.com/sitemap-index.xml
+Sitemap: https://my-site-hct.pages.dev/sitemap-index.xml
