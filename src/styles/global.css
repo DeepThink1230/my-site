@@ -649,6 +649,174 @@ main.wrap > * {
   color: var(--accent-deep);
 }
 
+/* ---------- 留言板 ---------- */
+.gb-form-card {
+  margin-bottom: 30px;
+}
+
+.gb-input {
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  resize: vertical;
+}
+
+.gb-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+textarea.gb-input {
+  min-height: 110px;
+  line-height: 1.7;
+}
+
+#gb-website {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.gb-form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gb-count {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.gb-submit {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  padding: 9px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.gb-submit:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-1px);
+}
+
+.gb-submit:active {
+  transform: scale(0.95);
+}
+
+.gb-submit:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.gb-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.gb-admin-btn {
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.gb-admin-btn:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.gb-msg {
+  padding: 16px 20px;
+}
+
+.gb-msg-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.gb-msg-name {
+  font-weight: 700;
+  color: var(--accent-deep);
+  font-size: 0.95rem;
+}
+
+.gb-msg-time {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.gb-msg-content {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.gb-del {
+  margin-top: 8px;
+  border: 1px solid #e0a3a3;
+  background: transparent;
+  color: #c0564f;
+  border-radius: 8px;
+  padding: 3px 12px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.gb-del:hover {
+  background: rgba(192, 86, 79, 0.08);
+}
+
+.gb-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 36px;
+  transform: translateX(-50%) translateY(16px);
+  background: rgba(50, 42, 34, 0.92);
+  color: #fff8ef;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 100;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.gb-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ---------- 空状态 ---------- */
 .empty-tip {
   text-align: center;

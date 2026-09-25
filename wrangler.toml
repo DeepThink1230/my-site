@@ -1,0 +1,9 @@
+# Cloudflare Pages 配置：把 D1 数据库绑定到网站（变量名 DB）
+name = "my-site"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "my-site-db"
+database_id = "8a0d18e5-7143-493e-8288-d01b3d8151cf"

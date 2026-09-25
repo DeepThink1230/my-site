@@ -1,0 +1,223 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="留言板" description="给站长留句话吧" wide>
+  <section class="section" style="margin-top: 18px;">
+    <div class="card taped gb-form-card">
+      <h2 style="margin-bottom: 4px;">✉️ 留言板</h2>
+      <p style="color: var(--muted); font-size: 0.92rem; margin: 0 0 14px;">
+        想说什么就说什么，不用登录。留言会在这里公开展示～
+      </p>
+      <form id="gb-form">
+        <input
+          type="text"
+          id="gb-name"
+          class="gb-input"
+          placeholder="怎么称呼你？（可不填，默认匿名）"
+          maxlength="16"
+          autocomplete="off"
+        />
+        <textarea
+          id="gb-content"
+          class="gb-input"
+          placeholder="写下你的留言…（最多 500 字）"
+          maxlength="500"
+          required
+        ></textarea>
+        <!-- 蜜罐字段：对人不可见，机器人会填 -->
+        <input type="text" id="gb-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="gb-form-foot">
+          <span id="gb-count" class="gb-count">0 / 500</span>
+          <button type="submit" id="gb-submit" class="gb-submit">贴上去 🌱</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="gb-list-head">
+      <h2 class="month-label" style="margin: 0;">💬 大家说的话</h2>
+      <button id="gb-admin" class="gb-admin-btn" title="站长管理">🔑</button>
+    </div>
+    <div id="gb-list" class="post-list" style="margin-top: 14px;">
+      <p class="empty-tip">正在加载留言…</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const list = document.getElementById('gb-list') as HTMLDivElement;
+  const form = document.getElementById('gb-form') as HTMLFormElement;
+  const nameInput = document.getElementById('gb-name') as HTMLInputElement;
+  const contentInput = document.getElementById('gb-content') as HTMLTextAreaElement;
+  const countEl = document.getElementById('gb-count') as HTMLSpanElement;
+  const submitBtn = document.getElementById('gb-submit') as HTMLButtonElement;
+  const adminBtn = document.getElementById('gb-admin') as HTMLButtonElement;
+  const honeypot = document.getElementById('gb-website') as HTMLInputElement;
+
+  const ADMIN_STORE = 'gb-admin-key';
+  const isAdmin = () => Boolean(localStorage.getItem(ADMIN_STORE));
+
+  function toast(text: string) {
+    const t = document.createElement('div');
+    t.className = 'gb-toast';
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => t.classList.add('show'), 10);
+    setTimeout(() => {
+      t.classList.remove('show');
+      setTimeout(() => t.remove(), 300);
+    }, 2400);
+  }
+
+  function timeAgo(ts: number): string {
+    const diff = Date.now() - ts;
+    if (diff < 60_000) return '刚刚';
+    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
+    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
+    if (diff < 30 * 86_400_000) return `${Math.floor(diff / 86_400_000)} 天前`;
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  // 全部用 DOM API + textContent 渲染，天然防注入
+  function renderMessage(m: { id: number; name: string; content: string; created_at: number }) {
+    const card = document.createElement('div');
+    card.className = 'card gb-msg';
+
+    const head = document.createElement('div');
+    head.className = 'gb-msg-head';
+    const name = document.createElement('span');
+    name.className = 'gb-msg-name';
+    name.textContent = m.name;
+    const time = document.createElement('span');
+    time.className = 'gb-msg-time';
+    time.textContent = timeAgo(m.created_at);
+    head.append(name, time);
+
+    const p = document.createElement('p');
+    p.className = 'gb-msg-content';
+    p.textContent = m.content;
+
+    card.append(head, p);
+
+    if (isAdmin()) {
+      const del = document.createElement('button');
+      del.className = 'gb-del';
+      del.textContent = '删除';
+      del.addEventListener('click', async () => {
+        if (!confirm('确定删除这条留言吗？')) return;
+        const res = await fetch(`/api/messages/${m.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': localStorage.getItem(ADMIN_STORE) || '' },
+        });
+        if (res.ok) {
+          card.remove();
+          toast('已删除 🗑️');
+          if (!list.querySelector('.gb-msg')) list.innerHTML = '<p class="empty-tip">还没有留言，来抢沙发吧 🛋️</p>';
+        } else {
+          const data = await res.json().catch(() => ({ error: '删除失败' }));
+          alert(data.error || '删除失败');
+          if (res.status === 401) {
+            localStorage.removeItem(ADMIN_STORE);
+            location.reload();
+          }
+        }
+      });
+      card.appendChild(del);
+    }
+
+    return card;
+  }
+
+  async function load() {
+    try {
+      const res = await fetch('/api/messages');
+      const data = await res.json();
+      if (!res.ok) {
+        list.innerHTML = '';
+        const p = document.createElement('p');
+        p.className = 'empty-tip';
+        p.textContent = data.error || '留言加载失败';
+        list.appendChild(p);
+        return;
+      }
+      list.innerHTML = '';
+      const msgs = data.messages as Array<{ id: number; name: string; content: string; created_at: number }>;
+      if (msgs.length === 0) {
+        const p = document.createElement('p');
+        p.className = 'empty-tip';
+        p.textContent = '还没有留言，来抢沙发吧 🛋️';
+        list.appendChild(p);
+        return;
+      }
+      for (const m of msgs) list.appendChild(renderMessage(m));
+    } catch {
+      list.innerHTML = '<p class="empty-tip">网络开小差了，刷新试试 🍃</p>';
+    }
+  }
+
+  contentInput.addEventListener('input', () => {
+    countEl.textContent = `${contentInput.value.length} / 500`;
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const content = contentInput.value.trim();
+    if (!content) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '贴上去…';
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: nameInput.value,
+          content,
+          website: honeypot.value, // 蜜罐原样上交，由服务端判断
+        }),
+      });
+      const data = await res.json().catch(() => ({ error: '发布失败' }));
+      if (res.ok) {
+        contentInput.value = '';
+        countEl.textContent = '0 / 500';
+        toast('留言成功 🌱');
+        const empty = list.querySelector('.empty-tip');
+        if (empty) empty.remove();
+        if (data.message) list.prepend(renderMessage(data.message));
+      } else {
+        toast(data.error || '发布失败');
+      }
+    } catch {
+      toast('网络开小差了，稍后再试 🍃');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '贴上去 🌱';
+    }
+  });
+
+  adminBtn.addEventListener('click', async () => {
+    if (isAdmin()) {
+      localStorage.removeItem(ADMIN_STORE);
+      toast('已退出管理模式');
+      load();
+      return;
+    }
+    const key = prompt('输入站长管理密码：');
+    if (!key) return;
+    // 用一个必然不存在的 id 试探：401=密码错，404=密码对
+    const res = await fetch('/api/messages/0', {
+      method: 'DELETE',
+      headers: { 'X-Admin-Key': key },
+    });
+    if (res.status === 404) {
+      localStorage.setItem(ADMIN_STORE, key);
+      toast('管理模式已开启 🔓');
+      load();
+    } else {
+      const data = await res.json().catch(() => ({ error: '验证失败' }));
+      alert(data.error || '验证失败');
+    }
+  });
+
+  load();
+</script>
