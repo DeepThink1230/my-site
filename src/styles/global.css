@@ -130,6 +130,14 @@ a, button, .hoverable, .zoomable {
   gap: 14px;
 }
 
+/* 标题行：左边站名，右边月亮按钮（互不重叠） */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .site-title {
   font-size: 1.7rem;
   font-weight: 700;
@@ -699,14 +707,14 @@ main.wrap > * {
     padding-top: 24px;
   }
 
-  /* 手机端：主题按钮固定在胶囊导航右侧，链接一行横向滚动 */
+  /* 手机端：导航胶囊一行横向滚动，链接不被按钮遮挡 */
   .nav {
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
     position: sticky;
     top: 8px;
-    padding-right: 52px;
+    padding: 6px;
   }
 
   .nav::-webkit-scrollbar {
@@ -714,11 +722,9 @@ main.wrap > * {
   }
 
   .theme-btn {
-    position: absolute;
-    right: 7px;
-    top: 7px;
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
   }
 
   .site-title {

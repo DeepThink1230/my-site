@@ -48,16 +48,17 @@ function isActive(href: string): boolean {
   <body>
     <header class="site-header">
       <div class="wrap">
-        <a href="/" class="site-title">
-          <span class="leaf">🌱</span>
-          {SITE.name}
-        </a>
+        <div class="header-row">
+          <a href="/" class="site-title">
+            <span class="leaf">🌱</span>
+            {SITE.name}
+          </a>
+          <button class="theme-btn" id="theme-btn" aria-label="切换日间/夜间模式">🌙</button>
+        </div>
         <nav class="nav">
           {navItems.map((item) => (
             <a href={item.href} class={isActive(item.href) ? 'active' : ''}>{item.label}</a>
           ))}
-          <span class="spacer"></span>
-          <button class="theme-btn" id="theme-btn" aria-label="切换日间/夜间模式">🌙</button>
         </nav>
       </div>
     </header>
