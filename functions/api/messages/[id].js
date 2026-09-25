@@ -11,7 +11,8 @@ export async function onRequestDelete(context) {
 
   await ensureSchema(env.DB);
   const id = Number(params.id);
-  if (!Number.isInteger(id) || id <= 0) return json({ error: 'id 不对' }, 400);
+  // 探测请求（id=0）和真不存在的 id 统一返回 404，前端用 404 判定"密码正确"
+  if (!Number.isInteger(id) || id <= 0) return json({ error: '这条留言不存在' }, 404);
 
   const res = await env.DB.prepare('DELETE FROM messages WHERE id = ?').bind(id).run();
   if (!res.meta.changes) return json({ error: '这条留言不存在' }, 404);

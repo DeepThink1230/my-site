@@ -38,6 +38,10 @@ import Base from '../layouts/Base.astro';
       <h2 class="month-label" style="margin: 0;">💬 大家说的话</h2>
       <button id="gb-admin" class="gb-admin-btn" title="站长管理">🔑</button>
     </div>
+    <div id="gb-admin-row" class="gb-admin-row" hidden>
+      <input type="password" id="gb-admin-key" class="gb-input" style="margin-bottom: 0;" placeholder="输入站长管理密码" autocomplete="off" />
+      <button id="gb-admin-unlock" class="gb-submit" style="flex-shrink: 0;">解锁</button>
+    </div>
     <div id="gb-list" class="post-list" style="margin-top: 14px;">
       <p class="empty-tip">正在加载留言…</p>
     </div>
@@ -52,6 +56,9 @@ import Base from '../layouts/Base.astro';
   const countEl = document.getElementById('gb-count') as HTMLSpanElement;
   const submitBtn = document.getElementById('gb-submit') as HTMLButtonElement;
   const adminBtn = document.getElementById('gb-admin') as HTMLButtonElement;
+  const adminRow = document.getElementById('gb-admin-row') as HTMLDivElement;
+  const adminKeyInput = document.getElementById('gb-admin-key') as HTMLInputElement;
+  const unlockBtn = document.getElementById('gb-admin-unlock') as HTMLButtonElement;
   const honeypot = document.getElementById('gb-website') as HTMLInputElement;
 
   const ADMIN_STORE = 'gb-admin-key';
@@ -104,8 +111,20 @@ import Base from '../layouts/Base.astro';
       const del = document.createElement('button');
       del.className = 'gb-del';
       del.textContent = '删除';
+      let armTimer: ReturnType<typeof setTimeout> | undefined;
+      // 两次点击确认，替代 confirm() 弹窗（手机浏览器对弹窗支持参差）
       del.addEventListener('click', async () => {
-        if (!confirm('确定删除这条留言吗？')) return;
+        if (!del.classList.contains('armed')) {
+          del.classList.add('armed');
+          del.textContent = '确认删除？';
+          armTimer = setTimeout(() => {
+            del.classList.remove('armed');
+            del.textContent = '删除';
+          }, 3000);
+          return;
+        }
+        clearTimeout(armTimer);
+        del.textContent = '删除中…';
         const res = await fetch(`/api/messages/${m.id}`, {
           method: 'DELETE',
           headers: { 'X-Admin-Key': localStorage.getItem(ADMIN_STORE) || '' },
@@ -113,13 +132,18 @@ import Base from '../layouts/Base.astro';
         if (res.ok) {
           card.remove();
           toast('已删除 🗑️');
-          if (!list.querySelector('.gb-msg')) list.innerHTML = '<p class="empty-tip">还没有留言，来抢沙发吧 🛋️</p>';
+          if (!list.querySelector('.gb-msg')) {
+            const p = document.createElement('p');
+            p.className = 'empty-tip';
+            p.textContent = '还没有留言，来抢沙发吧 🛋️';
+            list.appendChild(p);
+          }
         } else {
           const data = await res.json().catch(() => ({ error: '删除失败' }));
-          alert(data.error || '删除失败');
+          toast(data.error || '删除失败');
           if (res.status === 401) {
             localStorage.removeItem(ADMIN_STORE);
-            location.reload();
+            setTimeout(() => location.reload(), 1200);
           }
         }
       });
@@ -195,27 +219,36 @@ import Base from '../layouts/Base.astro';
     }
   });
 
-  adminBtn.addEventListener('click', async () => {
+  adminBtn.addEventListener('click', () => {
     if (isAdmin()) {
       localStorage.removeItem(ADMIN_STORE);
       toast('已退出管理模式');
       load();
       return;
     }
-    const key = prompt('输入站长管理密码：');
+    adminRow.hidden = !adminRow.hidden;
+    if (!adminRow.hidden) adminKeyInput.focus();
+  });
+
+  unlockBtn.addEventListener('click', async () => {
+    const key = adminKeyInput.value;
     if (!key) return;
+    unlockBtn.disabled = true;
     // 用一个必然不存在的 id 试探：401=密码错，404=密码对
     const res = await fetch('/api/messages/0', {
       method: 'DELETE',
       headers: { 'X-Admin-Key': key },
     });
+    unlockBtn.disabled = false;
     if (res.status === 404) {
       localStorage.setItem(ADMIN_STORE, key);
+      adminKeyInput.value = '';
+      adminRow.hidden = true;
       toast('管理模式已开启 🔓');
       load();
     } else {
       const data = await res.json().catch(() => ({ error: '验证失败' }));
-      alert(data.error || '验证失败');
+      toast(data.error || '验证失败');
     }
   });
 
